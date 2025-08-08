@@ -40,6 +40,7 @@ while read -r script; do
     job_id=$(echo "$output" | awk '{print $4}')
     echo "$job_id $script" >> "$JOBLIST"
     echo "Job $job_id soumis pour $script"
+
 done < "$JOB_SCRIPTS"
 
 # 2. Suivi des jobs
