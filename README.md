@@ -21,8 +21,8 @@ Automatisez la soumission, le suivi et l'archivage de vos jobs `sbatch` sur le s
 - Bash 4+
 
 ## Utilisation
-1. Placez vos scripts Slurm (ex: `myjob1.slurm`, `myjob2.slurm`, `myjob3.slurm`) dans le même dossier que le script ci-dessous.
-2. Adaptez éventuellement les chemins de logs et les options dans le script.
+1. Listez vos scripts Slurm dans un fichier texte (ex: `jobs.txt`), un nom de fichier par ligne.
+2. Sauvegardez le script ci‑dessous (ex : `run_jobs.sh`), adaptez les chemins de logs si besoin et exécutez‑le en lui passant ce fichier : `./run_jobs.sh jobs.txt`.
 
 ```bash
 #!/usr/bin/env bash
@@ -30,15 +30,18 @@ Automatisez la soumission, le suivi et l'archivage de vos jobs `sbatch` sur le s
 # 1. Soumission des jobs en parallèle
 LOGDIR="$HOME/logs"
 JOBLIST="$LOGDIR/job_ids.txt"
+JOB_SCRIPTS="${1:-jobs.txt}"  # fichier listant les scripts à soumettre
 mkdir -p "$LOGDIR"
 : > "$JOBLIST"
 
-for script in myjob1.slurm myjob2.slurm myjob3.slurm; do
+while read -r script; do
+    [[ -z "$script" ]] && continue  # ignore les lignes vides
     output=$(sbatch "$script")
     job_id=$(echo "$output" | awk '{print $4}')
     echo "$job_id $script" >> "$JOBLIST"
     echo "Job $job_id soumis pour $script"
-done
+
+done < "$JOB_SCRIPTS"
 
 # 2. Suivi des jobs
 while true; do
